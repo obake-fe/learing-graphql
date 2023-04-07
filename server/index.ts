@@ -3,7 +3,7 @@ import { startStandaloneServer } from '@apollo/server/standalone';
 import { loadSchema } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
 import { addResolversToSchema } from '@graphql-tools/schema';
-import { Resolvers } from './types/generated/graphql';
+import { Photo, Resolvers } from './types/generated/graphql';
 
 // schema is `GraphQLSchema` instance
 const schema = await loadSchema('schema.graphql', {
@@ -11,19 +11,29 @@ const schema = await loadSchema('schema.graphql', {
   loaders: [new GraphQLFileLoader()]
 });
 
+// ユニークIDをインクリメントするための変数
+let _id = 0;
 // 写真を格納するための配列を定義する
-let photos = [];
+let photos = [] as Photo[];
 
 const resolvers: Resolvers = {
   Query: {
     // 写真を格納した配列の長さを返す
-    totalPhotos: () => photos.length
+    totalPhotos: () => photos.length,
+    allPhotos: () => photos
   },
   // postPhotoミューテーションと対応するリゾルバ
   Mutation: {
     postPhoto(parent, args) {
-      photos.push(args);
-      return true;
+      // 新しい写真を作成し、idを生成する
+      const id = String(_id++);
+      let newPhoto: Photo = {
+        id,
+        url: `http://yoursite.com/img/${id}.jpg`,
+        ...args
+      };
+      photos.push(newPhoto);
+      return newPhoto;
     }
   }
 };

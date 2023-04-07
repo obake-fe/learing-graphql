@@ -1,6 +1,23 @@
+"""
+Photo型を定義します
+"""
+type Photo {
+    id: ID!
+    url: String!
+    name: String!
+    description: String
+}
+
 type Query {
     totalPhotos: Int!
+
+    "allPhotosはPhotoを返します"
+    allPhotos: [Photo!]!
 }
+
+"""
+ミューテーションによって新たに投稿されたPhotoを返します
+"""
 type Mutation {
-    postPhoto(name: String!, description: String!): Boolean!
+    postPhoto(name: String!, description: String): Photo!
 }
