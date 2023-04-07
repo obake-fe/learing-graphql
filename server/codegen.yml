@@ -1,0 +1,7 @@
+overwrite: true
+generates:
+  ./types/generated/graphql.ts: # 型定義ファイルの作成場所
+    schema: schema.graphql
+    plugins:
+      - typescript
+      - typescript-resolvers
