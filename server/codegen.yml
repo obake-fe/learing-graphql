@@ -5,3 +5,7 @@ generates:
     plugins:
       - typescript
       - typescript-resolvers
+    config:
+      mappers:
+        Photo: "types.ts#ModelPhoto"
+        User: "types.ts#ModelUser"

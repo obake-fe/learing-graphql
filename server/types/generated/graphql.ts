@@ -1,4 +1,5 @@
 import { GraphQLResolveInfo } from 'graphql';
+import { ModelPhoto, ModelUser } from 'types.ts';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -33,6 +34,7 @@ export type Photo = {
   description?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   name: Scalars['String'];
+  postedBy?: Maybe<User>;
   url: Scalars['String'];
 };
 
@@ -55,6 +57,14 @@ export type Query = {
   /** allPhotosはPhotoを返します */
   allPhotos: Array<Photo>;
   totalPhotos: Scalars['Int'];
+};
+
+export type User = {
+  __typename?: 'User';
+  avatar?: Maybe<Scalars['String']>;
+  githubLogin: Scalars['ID'];
+  name?: Maybe<Scalars['String']>;
+  postedPhotos: Array<Photo>;
 };
 
 
@@ -132,11 +142,12 @@ export type ResolversTypes = {
   ID: ResolverTypeWrapper<Scalars['ID']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   Mutation: ResolverTypeWrapper<{}>;
-  Photo: ResolverTypeWrapper<Photo>;
+  Photo: ResolverTypeWrapper<ModelPhoto>;
   PhotoCategory: PhotoCategory;
   PostPhotoInput: PostPhotoInput;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  User: ResolverTypeWrapper<ModelUser>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -145,10 +156,11 @@ export type ResolversParentTypes = {
   ID: Scalars['ID'];
   Int: Scalars['Int'];
   Mutation: {};
-  Photo: Photo;
+  Photo: ModelPhoto;
   PostPhotoInput: PostPhotoInput;
   Query: {};
   String: Scalars['String'];
+  User: ModelUser;
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
@@ -160,6 +172,7 @@ export type PhotoResolvers<ContextType = any, ParentType extends ResolversParent
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  postedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -169,9 +182,18 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   totalPhotos?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 };
 
+export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  avatar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  githubLogin?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  postedPhotos?: Resolver<Array<ResolversTypes['Photo']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
   Mutation?: MutationResolvers<ContextType>;
   Photo?: PhotoResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  User?: UserResolvers<ContextType>;
 };
 

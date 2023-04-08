@@ -3,7 +3,8 @@ import { startStandaloneServer } from '@apollo/server/standalone';
 import { loadSchema } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
 import { addResolversToSchema } from '@graphql-tools/schema';
-import { Photo, PhotoCategory, Resolvers } from './types/generated/graphql';
+import { PhotoCategory, Resolvers } from './types/generated/graphql';
+import { ModelPhoto, ModelUser } from './types/generated/types';
 
 // schema is `GraphQLSchema` instance
 const schema = await loadSchema('schema.graphql', {
@@ -12,9 +13,36 @@ const schema = await loadSchema('schema.graphql', {
 });
 
 // ユニークIDをインクリメントするための変数
-let _id = 0;
-// 写真を格納するための配列を定義する
-let photos = [] as Photo[];
+let _id = 4;
+
+const users: ModelUser[] = [
+  { githubLogin: 'mHattrup', name: 'Mike Hattrup' },
+  { githubLogin: 'gPlake', name: 'Glen Plake' },
+  { githubLogin: 'sSchmidt', name: 'Scot Schmidt' }
+];
+
+const photos: ModelPhoto[] = [
+  {
+    id: '1',
+    name: 'Dropping the Heart Chute',
+    description: 'The heart chute is one of my favorite chutes',
+    category: 'ACTION' as PhotoCategory,
+    githubUser: 'gPlake'
+  },
+  {
+    id: '2',
+    name: 'Enjoying the sunshine',
+    category: 'SELFIE' as PhotoCategory,
+    githubUser: 'sSchmidt'
+  },
+  {
+    id: '3',
+    name: 'Gunbarrel 25',
+    description: '25 laps on gunbarrel today',
+    category: 'LANDSCAPE' as PhotoCategory,
+    githubUser: 'sSchmidt'
+  }
+];
 
 const resolvers: Resolvers = {
   Query: {
@@ -27,15 +55,26 @@ const resolvers: Resolvers = {
     postPhoto(parent, { input }) {
       // 新しい写真を作成し、idを生成する
       const id = String(_id++);
-      let newPhoto: Photo = {
+      let newPhoto: ModelPhoto = {
         id,
-        url: `http://yoursite.com/img/${id}.jpg`,
         name: input.name,
         description: input.description,
         category: input.category || ('PORTRAIT' as PhotoCategory)
       };
       photos.push(newPhoto);
       return newPhoto;
+    }
+  },
+  // トリビアルリゾルバ
+  Photo: {
+    url: (parent) => `http://yoursite.com/img/${parent.id}.jpg`,
+    postedBy: (parent) => {
+      return users.find((u) => u.githubLogin === parent.githubUser);
+    }
+  },
+  User: {
+    postedPhotos: (parent) => {
+      return photos.filter((p) => p.githubUser === parent.githubLogin);
     }
   }
 };
