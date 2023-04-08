@@ -23,17 +23,31 @@ export type Mutation = {
 
 /** ミューテーションによって新たに投稿されたPhotoを返します */
 export type MutationPostPhotoArgs = {
-  description?: InputMaybe<Scalars['String']>;
-  name: Scalars['String'];
+  input: PostPhotoInput;
 };
 
 /** Photo型を定義します */
 export type Photo = {
   __typename?: 'Photo';
+  category: PhotoCategory;
   description?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   name: Scalars['String'];
   url: Scalars['String'];
+};
+
+export enum PhotoCategory {
+  Action = 'ACTION',
+  Graphic = 'GRAPHIC',
+  Landscape = 'LANDSCAPE',
+  Portrait = 'PORTRAIT',
+  Selfie = 'SELFIE'
+}
+
+export type PostPhotoInput = {
+  category?: InputMaybe<PhotoCategory>;
+  description?: InputMaybe<Scalars['String']>;
+  name: Scalars['String'];
 };
 
 export type Query = {
@@ -119,6 +133,8 @@ export type ResolversTypes = {
   Int: ResolverTypeWrapper<Scalars['Int']>;
   Mutation: ResolverTypeWrapper<{}>;
   Photo: ResolverTypeWrapper<Photo>;
+  PhotoCategory: PhotoCategory;
+  PostPhotoInput: PostPhotoInput;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
 };
@@ -130,15 +146,17 @@ export type ResolversParentTypes = {
   Int: Scalars['Int'];
   Mutation: {};
   Photo: Photo;
+  PostPhotoInput: PostPhotoInput;
   Query: {};
   String: Scalars['String'];
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  postPhoto?: Resolver<ResolversTypes['Photo'], ParentType, ContextType, RequireFields<MutationPostPhotoArgs, 'name'>>;
+  postPhoto?: Resolver<ResolversTypes['Photo'], ParentType, ContextType, RequireFields<MutationPostPhotoArgs, 'input'>>;
 };
 
 export type PhotoResolvers<ContextType = any, ParentType extends ResolversParentTypes['Photo'] = ResolversParentTypes['Photo']> = {
+  category?: Resolver<ResolversTypes['PhotoCategory'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
