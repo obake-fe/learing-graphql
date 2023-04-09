@@ -1,11 +1,15 @@
 import { ApolloServer } from '@apollo/server';
-import { startStandaloneServer } from '@apollo/server/standalone';
 import { loadSchema } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
 import { addResolversToSchema } from '@graphql-tools/schema';
 import { PhotoCategory, Resolvers } from './types/generated/graphql';
 import { ModelPhoto, ModelUser, Tag } from './types/generated/types';
 import { GraphQLError, GraphQLScalarType, Kind } from 'graphql';
+import express from 'express';
+import * as http from 'http';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import cors from 'cors';
+import { expressMiddleware } from '@apollo/server/express4';
 
 // schema is `GraphQLSchema` instance
 const schema = await loadSchema('schema.graphql', {
@@ -142,16 +146,32 @@ const resolvers: Resolvers = {
   })
 };
 
+const app = express();
+const httpServer = http.createServer(app);
+
 const schemaWithResolvers = addResolversToSchema({ schema, resolvers });
 
 // サーバのインスタンスを作成
 const server = new ApolloServer({
-  schema: schemaWithResolvers
+  schema: schemaWithResolvers,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
 });
 
+await server.start();
+
+// ホームルート
+app.get('/', (req, res) => res.end('Welcome to the PhotoShare API'));
+
+// GraphQLエンドポイント及びPlayground
+app.use(
+  '/graphql',
+  cors<cors.CorsRequest>(),
+  express.json(),
+  expressMiddleware(server, {
+    context: async ({ req }) => ({ token: req.headers.token })
+  })
+);
+
 // webサーバを起動
-const { url } = await startStandaloneServer(server, {
-  context: async ({ req }) => ({ token: req.headers.token }),
-  listen: { port: 4000 }
-});
-console.log(`🚀  Server ready at ${url}`);
+await new Promise<void>((resolve) => httpServer.listen(4000, resolve as any));
+console.log(`🚀 Server ready at http://localhost:4000/graphql`);
