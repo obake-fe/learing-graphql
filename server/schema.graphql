@@ -6,6 +6,14 @@ enum PhotoCategory {
     GRAPHIC
 }
 
+type User {
+    githubLogin: ID!
+    name: String
+    avatar: String
+    postedPhotos: [Photo!]!
+    inPhotos: [Photo!]!
+}
+
 """
 Photo型を定義します
 """
@@ -15,14 +23,8 @@ type Photo {
     name: String!
     description: String
     category: PhotoCategory!
-    postedBy: User
-}
-
-type User {
-    githubLogin: ID!
-    name: String
-    avatar: String
-    postedPhotos: [Photo!]!
+    postedBy: User!
+    taggedUsers: [User!]!
 }
 
 input PostPhotoInput {

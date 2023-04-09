@@ -12,3 +12,8 @@ export type ModelUser = {
   githubLogin: string;
   name: string;
 };
+
+export type Tag = {
+  photoID: string;
+  userID: string;
+};

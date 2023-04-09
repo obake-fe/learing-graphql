@@ -34,7 +34,8 @@ export type Photo = {
   description?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   name: Scalars['String'];
-  postedBy?: Maybe<User>;
+  postedBy: User;
+  taggedUsers: Array<User>;
   url: Scalars['String'];
 };
 
@@ -63,6 +64,7 @@ export type User = {
   __typename?: 'User';
   avatar?: Maybe<Scalars['String']>;
   githubLogin: Scalars['ID'];
+  inPhotos: Array<Photo>;
   name?: Maybe<Scalars['String']>;
   postedPhotos: Array<Photo>;
 };
@@ -172,7 +174,8 @@ export type PhotoResolvers<ContextType = any, ParentType extends ResolversParent
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  postedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  postedBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  taggedUsers?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -185,6 +188,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   avatar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   githubLogin?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  inPhotos?: Resolver<Array<ResolversTypes['Photo']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   postedPhotos?: Resolver<Array<ResolversTypes['Photo']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
