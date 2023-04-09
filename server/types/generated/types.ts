@@ -6,6 +6,7 @@ export type ModelPhoto = {
   description?: string | null;
   category: PhotoCategory;
   githubUser?: string;
+  created: unknown;
 };
 
 export type ModelUser = {

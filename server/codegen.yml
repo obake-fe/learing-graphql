@@ -9,3 +9,5 @@ generates:
       mappers:
         Photo: "types.ts#ModelPhoto"
         User: "types.ts#ModelUser"
+      scalars:
+        DateTime: unknown

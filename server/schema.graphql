@@ -1,3 +1,8 @@
+"""
+カスタムスカラー型
+"""
+scalar DateTime
+
 enum PhotoCategory {
     SELFIE
     PORTRAIT
@@ -25,8 +30,12 @@ type Photo {
     category: PhotoCategory!
     postedBy: User!
     taggedUsers: [User!]!
+    created: DateTime!
 }
 
+"""
+写真投稿用関数の引数に渡す値
+"""
 input PostPhotoInput {
     name: String!
     category: PhotoCategory=PORTRAIT
@@ -37,6 +46,7 @@ type Query {
     totalPhotos: Int!
 
     "allPhotosはPhotoを返します"
+#    allPhotos(after: DateTime!): [Photo!]!
     allPhotos: [Photo!]!
 }
 
