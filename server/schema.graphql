@@ -48,6 +48,8 @@ type Query {
     "allPhotosはPhotoを返します"
 #    allPhotos(after: DateTime!): [Photo!]!
     allPhotos: [Photo!]!
+    totalUsers: Int!
+    allUsers: [User!]!
 }
 
 """

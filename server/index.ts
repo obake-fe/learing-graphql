@@ -10,6 +10,10 @@ import * as http from 'http';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import cors from 'cors';
 import { expressMiddleware } from '@apollo/server/express4';
+import mongoose from 'mongoose';
+// index.mjs (ESM)
+import * as dotenv from 'dotenv'; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+dotenv.config();
 
 // schema is `GraphQLSchema` instance
 const schema = await loadSchema('schema.graphql', {
@@ -61,9 +65,10 @@ const tags: Tag[] = [
 
 const resolvers: Resolvers = {
   Query: {
-    // 写真を格納した配列の長さを返す
-    totalPhotos: () => photos.length,
-    allPhotos: () => photos
+    totalPhotos: (parent, args, { db }) => db.collection('photos').estimatedDocumentCount(),
+    allPhotos: (parent, args, { db }) => db.collection('photos').find().toArray(),
+    totalUsers: (parent, args, { db }) => db.collection('users').estimatedDocumentCount(),
+    allUsers: (parent, args, { db }) => db.collection('users').find().toArray()
   },
   // postPhotoミューテーションと対応するリゾルバ
   Mutation: {
@@ -145,6 +150,18 @@ const resolvers: Resolvers = {
     }
   })
 };
+
+const MONGO_DB = process.env.DB_HOST as string;
+
+// mongodbへの接続
+await mongoose
+  .connect(MONGO_DB)
+  .then(() => {
+    console.log(`Db Connected`);
+  })
+  .catch((err) => {
+    console.log(err.message);
+  });
 
 const app = express();
 const httpServer = http.createServer(app);
