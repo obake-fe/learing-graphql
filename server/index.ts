@@ -22,9 +22,6 @@ const schema = await loadSchema('schema.graphql', {
   loaders: [new GraphQLFileLoader()]
 });
 
-// ユニークIDをインクリメントするための変数
-let _id = 4;
-
 const users: ModelUser[] = [
   { githubLogin: 'mHattrup', name: 'Mike Hattrup' },
   { githubLogin: 'gPlake', name: 'Glen Plake' },
@@ -37,14 +34,14 @@ const photos: ModelPhoto[] = [
     name: 'Dropping the Heart Chute',
     description: 'The heart chute is one of my favorite chutes',
     category: 'ACTION' as PhotoCategory,
-    githubUser: 'gPlake',
+    githubLogin: 'gPlake',
     created: '3-28-1977'
   },
   {
     id: '2',
     name: 'Enjoying the sunshine',
     category: 'SELFIE' as PhotoCategory,
-    githubUser: 'sSchmidt',
+    githubLogin: 'sSchmidt',
     created: '1-2-1985'
   },
   {
@@ -52,7 +49,7 @@ const photos: ModelPhoto[] = [
     name: 'Gunbarrel 25',
     description: '25 laps on gunbarrel today',
     category: 'LANDSCAPE' as PhotoCategory,
-    githubUser: 'sSchmidt',
+    githubLogin: 'sSchmidt',
     created: '2018-04-15T19:09:57.308Z'
   }
 ];
@@ -85,18 +82,24 @@ const resolvers: Resolvers = {
   },
   // postPhotoミューテーションと対応するリゾルバ
   Mutation: {
-    postPhoto(parent, { input }) {
-      // 新しい写真を作成し、idを生成する
-      const id = String(_id++);
-      let newPhoto: ModelPhoto = {
-        id,
+    async postPhoto(parent, { input }, { db, currentUser }) {
+      // 1. コンテキストにユーザーがいなければエラーを投げる
+      if (!currentUser) {
+        throw new Error('only an authorized user can post a photo');
+      }
+
+      // 2. 現在のユーザーのIDとphotoを保存する
+      const newPhoto = {
         name: input.name,
         description: input.description,
         category: input.category || ('PORTRAIT' as PhotoCategory),
+        githubLogin: currentUser.githubLogin as string,
         created: new Date()
       };
-      photos.push(newPhoto);
-      return newPhoto;
+
+      // 3.新しいphotoを追加して、データベースが生成したIDを取得する
+      const { insertedIds } = await db.collection('photos').insertOne(newPhoto);
+      return { ...newPhoto, id: insertedIds[0] as string };
     },
     async githubAuth(parent, { code }) {
       // 1. Githubからデータを取得する
@@ -136,9 +139,10 @@ const resolvers: Resolvers = {
   },
   // トリビアルリゾルバ
   Photo: {
+    id: (parent) => parent.id || (parent._id as string),
     url: (parent) => `http://yoursite.com/img/${parent.id}.jpg`,
-    postedBy: (parent) => {
-      return users.find((u) => u.githubLogin === parent.githubUser);
+    postedBy: (parent, args, { db }) => {
+      return db.collection('users').findOne({ githubLogin: parent.githubLogin });
     },
     taggedUsers: (parent) =>
       tags
@@ -151,7 +155,7 @@ const resolvers: Resolvers = {
   },
   User: {
     postedPhotos: (parent) => {
-      return photos.filter((p) => p.githubUser === parent.githubLogin);
+      return photos.filter((p) => p.githubLogin === parent.githubLogin);
     },
     inPhotos: (parent) =>
       tags

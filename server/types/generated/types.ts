@@ -2,10 +2,11 @@ import { PhotoCategory } from './graphql';
 
 export type ModelPhoto = {
   id: string;
+  _id?: string;
   name: string;
   description?: string | null;
   category: PhotoCategory;
-  githubUser?: string;
+  githubLogin?: string;
   created: unknown;
 };
 
