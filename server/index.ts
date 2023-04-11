@@ -12,7 +12,9 @@ import cors from 'cors';
 import { expressMiddleware } from '@apollo/server/express4';
 import mongoose from 'mongoose';
 // index.mjs (ESM)
-import * as dotenv from 'dotenv'; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+import * as dotenv from 'dotenv';
+import { authorizeWithGithub } from './lib/index.js';
+import { User } from './db/schema.js'; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config();
 
 // schema is `GraphQLSchema` instance
@@ -84,6 +86,47 @@ const resolvers: Resolvers = {
       };
       photos.push(newPhoto);
       return newPhoto;
+    },
+    async githubAuth(parent, { code }, { db }) {
+      // 1. Githubからデータを取得する
+      let { message, access_token, avatar_url, login, name } = await authorizeWithGithub({
+        client_id: 'c5cd0b6fb7e3d82a33ba',
+        client_secret: '6ff6c4dd5ad6ed64505da219bfb0a8f6ca5a30f2',
+        code
+      });
+
+      // 2. メッセージがある場合は何らかのエラーが発生している
+      if (message) {
+        throw new Error(message);
+      }
+
+      // 3. データをひとつのオブジェクトにまとめる
+      let latestUserInfo = {
+        name,
+        githubLogin: login,
+        githubToken: access_token,
+        avatar: avatar_url
+      };
+
+      // 4. 新しい情報をもとにレコードを追加したり更新する
+      // const {
+      //   ops: [user]
+      // } = await db
+      //   .collection('users')
+      //   .replaceOne({ githubLogin: login }, latestUserInfo, { upsert: true });
+
+      const newUser = new User({ githubLogin: login }, latestUserInfo);
+      // await newUser.save();
+      console.log('🦈', newUser);
+
+      // 5. ユーザーデータとトークンを返す
+      return {
+        user: {
+          name,
+          githubLogin: login
+        },
+        token: access_token
+      };
     }
   },
   // トリビアルリゾルバ
