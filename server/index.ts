@@ -77,6 +77,7 @@ const database = client.db('test_db');
 
 const resolvers: Resolvers = {
   Query: {
+    me: (parent, args, { currentUser }) => currentUser,
     totalPhotos: (parent, args, { db }) => db.collection('photos').estimatedDocumentCount(),
     allPhotos: (parent, args, { db }) => db.collection('photos').find().toArray(),
     totalUsers: (parent, args, { db }) => db.collection('users').estimatedDocumentCount(),
@@ -226,7 +227,11 @@ app.use(
   cors<cors.CorsRequest>(),
   express.json(),
   expressMiddleware(server, {
-    context: async ({ req }) => ({ token: req.headers.token })
+    context: async ({ req }) => {
+      const githubToken = req.headers.authorization;
+      const currentUser = await database.collection('users').findOne({ githubToken });
+      return { db: database, currentUser };
+    }
   })
 );
 

@@ -48,6 +48,7 @@ type AuthPayload {
 }
 
 type Query {
+    me: User
     totalPhotos: Int!
 
     "allPhotosはPhotoを返します"
