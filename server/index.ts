@@ -10,11 +10,10 @@ import * as http from 'http';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import cors from 'cors';
 import { expressMiddleware } from '@apollo/server/express4';
-import mongoose from 'mongoose';
+import { MongoClient, ServerApiVersion } from 'mongodb'; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+import { authorizeWithGithub } from './lib/index.js';
 // index.mjs (ESM)
 import * as dotenv from 'dotenv';
-import { authorizeWithGithub } from './lib/index.js';
-import { User } from './db/schema.js'; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config();
 
 // schema is `GraphQLSchema` instance
@@ -65,6 +64,17 @@ const tags: Tag[] = [
   { photoID: '2', userID: 'gPlake' }
 ];
 
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const MONGO_DB = process.env.DB_HOST as string;
+const client = new MongoClient(MONGO_DB, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true
+  }
+});
+const database = client.db('test_db');
+
 const resolvers: Resolvers = {
   Query: {
     totalPhotos: (parent, args, { db }) => db.collection('photos').estimatedDocumentCount(),
@@ -87,11 +97,11 @@ const resolvers: Resolvers = {
       photos.push(newPhoto);
       return newPhoto;
     },
-    async githubAuth(parent, { code }, { db }) {
+    async githubAuth(parent, { code }) {
       // 1. Githubからデータを取得する
       let { message, access_token, avatar_url, login, name } = await authorizeWithGithub({
-        client_id: 'c5cd0b6fb7e3d82a33ba',
-        client_secret: '6ff6c4dd5ad6ed64505da219bfb0a8f6ca5a30f2',
+        client_id: process.env.CLIENT_ID as string,
+        client_secret: process.env.CLIENT_SECRET as string,
         code
       });
 
@@ -109,15 +119,9 @@ const resolvers: Resolvers = {
       };
 
       // 4. 新しい情報をもとにレコードを追加したり更新する
-      // const {
-      //   ops: [user]
-      // } = await db
-      //   .collection('users')
-      //   .replaceOne({ githubLogin: login }, latestUserInfo, { upsert: true });
-
-      const newUser = new User({ githubLogin: login }, latestUserInfo);
-      // await newUser.save();
-      console.log('🦈', newUser);
+      await database
+        .collection('users')
+        .replaceOne({ githubLogin: login }, latestUserInfo, { upsert: true });
 
       // 5. ユーザーデータとトークンを返す
       return {
@@ -194,17 +198,11 @@ const resolvers: Resolvers = {
   })
 };
 
-const MONGO_DB = process.env.DB_HOST as string;
-
-// mongodbへの接続
-await mongoose
-  .connect(MONGO_DB)
-  .then(() => {
-    console.log(`Db Connected`);
-  })
-  .catch((err) => {
-    console.log(err.message);
-  });
+// Connect the client to the server (optional starting in v4.7)
+await client.connect();
+// Send a ping to confirm a successful connection
+await client.db('test_db').command({ ping: 1 });
+console.log('Pinged your deployment. You successfully connected to MongoDB!');
 
 const app = express();
 const httpServer = http.createServer(app);
