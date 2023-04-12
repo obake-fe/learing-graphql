@@ -63,5 +63,44 @@ export const Mutation: MutationResolvers = {
       user: value as ModelUser,
       token: access_token
     };
+  },
+  // テスト用にダミーのユーザーデータを取得するミューテーション
+  addFakeUsers: async (root, { count }, { db }) => {
+    const randomUserApi = `https://randomuser.me/api/?results=${count}`;
+
+    type FakeUser = {
+      login: {
+        username: string;
+        sha1: string;
+      };
+      name: {
+        first: string;
+        last: string;
+      };
+      picture: {
+        thumbnail: string;
+      };
+    };
+
+    // 外部APIを使ってユーザーデータを取得する
+    // @see https://randomuser.me/
+    const { results }: { results: FakeUser[] } = await fetch(randomUserApi).then((res) =>
+      res.json()
+    );
+
+    const users = results.map((r) => ({
+      name: `${r.name.first} ${r.name.last}`,
+      avatar: r.picture.thumbnail,
+      githubLogin: r.login.username,
+      githubToken: r.login.sha1
+    }));
+
+    const { insertedIds } = await db.collection<Omit<ModelUser, '_id'>>('users').insertMany(users);
+    const fakeUsers = users.map((user, index) => {
+      return { _id: insertedIds[index.toString()], ...user };
+    });
+    console.log('🐬fakeUsers', fakeUsers);
+
+    return fakeUsers;
   }
 };
