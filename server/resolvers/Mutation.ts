@@ -65,7 +65,7 @@ export const Mutation: MutationResolvers = {
     };
   },
   // テスト用にダミーのユーザーデータを取得するミューテーション
-  addFakeUsers: async (root, { count }, { db }) => {
+  async addFakeUsers(parent, { count }, { db }) {
     const randomUserApi = `https://randomuser.me/api/?results=${count}`;
 
     type FakeUser = {
@@ -102,5 +102,18 @@ export const Mutation: MutationResolvers = {
     console.log('🐬fakeUsers', fakeUsers);
 
     return fakeUsers;
+  },
+  // ダミーユーザーで認証する
+  async fakeUserAuth(parent, { githubLogin }, { db }) {
+    const user = await db.collection<ModelUser>('users').findOne({ githubLogin });
+
+    if (!user) {
+      throw new Error(`Cannot find user with githubLogin ${githubLogin}`);
+    }
+
+    return {
+      token: user.githubToken,
+      user
+    };
   }
 };
