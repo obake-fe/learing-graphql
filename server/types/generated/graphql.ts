@@ -1,5 +1,5 @@
 import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import { ModelPhoto, ModelUser } from 'types.ts';
+import { ModelPhoto, ModelUser, Context } from 'types.ts';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -190,7 +190,7 @@ export type ResolversParentTypes = {
   User: ModelUser;
 };
 
-export type AuthPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthPayload'] = ResolversParentTypes['AuthPayload']> = {
+export type AuthPayloadResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AuthPayload'] = ResolversParentTypes['AuthPayload']> = {
   token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -200,12 +200,12 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'DateTime';
 }
 
-export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   githubAuth?: Resolver<ResolversTypes['AuthPayload'], ParentType, ContextType, RequireFields<MutationGithubAuthArgs, 'code'>>;
   postPhoto?: Resolver<ResolversTypes['Photo'], ParentType, ContextType, RequireFields<MutationPostPhotoArgs, 'input'>>;
 };
 
-export type PhotoResolvers<ContextType = any, ParentType extends ResolversParentTypes['Photo'] = ResolversParentTypes['Photo']> = {
+export type PhotoResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Photo'] = ResolversParentTypes['Photo']> = {
   category?: Resolver<ResolversTypes['PhotoCategory'], ParentType, ContextType>;
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -217,7 +217,7 @@ export type PhotoResolvers<ContextType = any, ParentType extends ResolversParent
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   allPhotos?: Resolver<Array<ResolversTypes['Photo']>, ParentType, ContextType>;
   allUsers?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
@@ -225,7 +225,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   totalUsers?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 };
 
-export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   avatar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   githubLogin?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   inPhotos?: Resolver<Array<ResolversTypes['Photo']>, ParentType, ContextType>;
@@ -234,7 +234,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type Resolvers<ContextType = any> = {
+export type Resolvers<ContextType = Context> = {
   AuthPayload?: AuthPayloadResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;

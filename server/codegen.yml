@@ -6,6 +6,7 @@ generates:
       - typescript
       - typescript-resolvers
     config:
+      contextType: "types.ts#Context"
       mappers:
         Photo: "types.ts#ModelPhoto"
         User: "types.ts#ModelUser"

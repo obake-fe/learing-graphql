@@ -3,14 +3,14 @@ import { loadSchema } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
 import { addResolversToSchema } from '@graphql-tools/schema';
 import { PhotoCategory, Resolvers } from './types/generated/graphql';
-import { ModelPhoto, ModelUser, Tag } from './types/generated/types';
+import { ModelPhoto, ModelTag, ModelUser } from './types/generated/types';
 import { GraphQLError, GraphQLScalarType, Kind } from 'graphql';
 import express from 'express';
 import * as http from 'http';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import cors from 'cors';
 import { expressMiddleware } from '@apollo/server/express4';
-import { MongoClient, ServerApiVersion } from 'mongodb'; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+import { MongoClient, ServerApiVersion } from 'mongodb';
 import { authorizeWithGithub } from './lib/index.js';
 // index.mjs (ESM)
 import * as dotenv from 'dotenv';
@@ -21,45 +21,6 @@ const schema = await loadSchema('schema.graphql', {
   // load from a single schema file
   loaders: [new GraphQLFileLoader()]
 });
-
-const users: ModelUser[] = [
-  { githubLogin: 'mHattrup', name: 'Mike Hattrup' },
-  { githubLogin: 'gPlake', name: 'Glen Plake' },
-  { githubLogin: 'sSchmidt', name: 'Scot Schmidt' }
-];
-
-const photos: ModelPhoto[] = [
-  {
-    id: '1',
-    name: 'Dropping the Heart Chute',
-    description: 'The heart chute is one of my favorite chutes',
-    category: 'ACTION' as PhotoCategory,
-    githubLogin: 'gPlake',
-    created: '3-28-1977'
-  },
-  {
-    id: '2',
-    name: 'Enjoying the sunshine',
-    category: 'SELFIE' as PhotoCategory,
-    githubLogin: 'sSchmidt',
-    created: '1-2-1985'
-  },
-  {
-    id: '3',
-    name: 'Gunbarrel 25',
-    description: '25 laps on gunbarrel today',
-    category: 'LANDSCAPE' as PhotoCategory,
-    githubLogin: 'sSchmidt',
-    created: '2018-04-15T19:09:57.308Z'
-  }
-];
-
-const tags: Tag[] = [
-  { photoID: '1', userID: 'gPlake' },
-  { photoID: '2', userID: 'sSchmidt' },
-  { photoID: '2', userID: 'mHattrup' },
-  { photoID: '2', userID: 'gPlake' }
-];
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const MONGO_DB = process.env.DB_HOST as string;
@@ -75,12 +36,13 @@ const database = client.db('test_db');
 const resolvers: Resolvers = {
   Query: {
     me: (parent, args, { currentUser }) => currentUser,
-    totalPhotos: (parent, args, { db }) => db.collection('photos').estimatedDocumentCount(),
-    allPhotos: (parent, args, { db }) => db.collection('photos').find().toArray(),
-    totalUsers: (parent, args, { db }) => db.collection('users').estimatedDocumentCount(),
-    allUsers: (parent, args, { db }) => db.collection('users').find().toArray()
+    totalPhotos: (parent, args, { db }) =>
+      db.collection<ModelPhoto>('photos').estimatedDocumentCount(),
+    allPhotos: (parent, args, { db }) => db.collection<ModelPhoto>('photos').find().toArray(),
+    totalUsers: (parent, args, { db }) =>
+      db.collection<ModelUser>('users').estimatedDocumentCount(),
+    allUsers: (parent, args, { db }) => db.collection<ModelUser>('users').find().toArray()
   },
-  // postPhotoミューテーションと対応するリゾルバ
   Mutation: {
     async postPhoto(parent, { input }, { db, currentUser }) {
       // 1. コンテキストにユーザーがいなければエラーを投げる
@@ -93,15 +55,20 @@ const resolvers: Resolvers = {
         name: input.name,
         description: input.description,
         category: input.category || ('PORTRAIT' as PhotoCategory),
-        githubLogin: currentUser.githubLogin as string,
+        githubLogin: currentUser.githubLogin,
         created: new Date()
       };
 
       // 3.新しいphotoを追加して、データベースが生成したIDを取得する
-      const { insertedIds } = await db.collection('photos').insertOne(newPhoto);
-      return { ...newPhoto, id: insertedIds[0] as string };
+      // If the operation successfully inserts a document,
+      // it appends an insertedId field to the object passed in the method call,
+      // and sets the value of the field to the _id of the inserted document.
+      const { insertedId } = await db
+        .collection<Omit<ModelPhoto, '_id'>>('photos')
+        .insertOne(newPhoto);
+      return { ...newPhoto, _id: insertedId };
     },
-    async githubAuth(parent, { code }) {
+    async githubAuth(parent, { code }, { db }) {
       // 1. Githubからデータを取得する
       let { message, access_token, avatar_url, login, name } = await authorizeWithGithub({
         client_id: process.env.CLIENT_ID as string,
@@ -123,48 +90,59 @@ const resolvers: Resolvers = {
       };
 
       // 4. 新しい情報をもとにレコードを追加したり更新する
-      await database
-        .collection('users')
-        .replaceOne({ githubLogin: login }, latestUserInfo, { upsert: true });
+      const { value } = await db
+        .collection<ModelUser>('users')
+        .findOneAndReplace({ githubLogin: login }, latestUserInfo, {
+          upsert: true,
+          returnDocument: 'after' // replace後の値をkey名がvalueのオブジェクトとして返す
+        });
+
+      console.log('🐞', value);
 
       // 5. ユーザーデータとトークンを返す
       return {
-        user: {
-          name,
-          githubLogin: login
-        },
+        user: value as ModelUser,
         token: access_token
       };
     }
   },
   // トリビアルリゾルバ
   Photo: {
-    id: (parent) => parent.id || (parent._id as string),
-    url: (parent) => `http://yoursite.com/img/${parent.id}.jpg`,
+    id: (parent) => parent._id.toString(),
+    url: (parent) => `http://yoursite.com/img/${parent._id}.jpg`,
     postedBy: (parent, args, { db }) => {
       return db.collection('users').findOne({ githubLogin: parent.githubLogin });
     },
-    taggedUsers: (parent) =>
-      tags
-        // 対象の写真が関係しているタグの配列を返す
-        .filter((tag) => tag.photoID === parent.id)
-        // タグの配列をユーザーIDの配列に変換する
-        .map((tag) => tag.userID)
-        // ユーザーIDの配列をユーザーオブジェクトの配列に変換する
-        .map((userID) => users.find((u) => u.githubLogin === userID))
+    taggedUsers: async (parent, args, { db }) => {
+      const tags: ModelTag[] = await db.collection<ModelTag>('tags').find().toArray();
+
+      // 対象の写真が関係しているタグの配列を返し、ユーザーIDの配列に変換する
+      const logins = tags.filter((t) => t.photoID === parent._id).map((t) => t.githubLogin);
+
+      // ユーザーIDの配列をユーザーオブジェクトの配列に変換する
+      return db
+        .collection<ModelUser>('users')
+        .find({ githubLogin: { $in: logins } }) // $inで配列内の値をOR検索する
+        .toArray();
+    }
   },
   User: {
-    postedPhotos: (parent) => {
-      return photos.filter((p) => p.githubLogin === parent.githubLogin);
-    },
-    inPhotos: (parent) =>
-      tags
-        // 対象のユーザーが関係しているタグの配列を返す
-        .filter((tag) => tag.userID === parent.name)
-        // タグの配列を写真IDの配列に変換する
-        .map((tag) => tag.photoID)
-        // 写真IDの配列を写真オブジェクトの配列に変換する
-        .map((photoID) => photos.find((p) => p.id === photoID))
+    postedPhotos: (parent, args, { db }) =>
+      db.collection<ModelPhoto>('photos').find({ githubLogin: parent.githubLogin }).toArray(),
+    inPhotos: async (parent, args, { db }) => {
+      const tags: ModelTag[] = await db.collection<ModelTag>('tags').find().toArray();
+
+      // 対象のユーザーが関係しているタグの配列を返し、写真IDの配列に変換する
+      const photoIDs = tags
+        .filter((t) => t.githubLogin === parent.githubLogin)
+        .map((t) => t.photoID);
+
+      // 写真IDの配列を写真オブジェクトの配列に変換する
+      return db
+        .collection<ModelPhoto>('photos')
+        .find({ _id: { $in: photoIDs } })
+        .toArray();
+    }
   },
   DateTime: new GraphQLScalarType<Date, unknown>({
     name: 'DateTime',
@@ -233,7 +211,7 @@ app.use(
   expressMiddleware(server, {
     context: async ({ req }) => {
       const githubToken = req.headers.authorization;
-      const currentUser = await database.collection('users').findOne({ githubToken });
+      const currentUser = await database.collection<ModelUser>('users').findOne({ githubToken });
       return { db: database, currentUser };
     }
   })

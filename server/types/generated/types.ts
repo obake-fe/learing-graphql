@@ -1,8 +1,13 @@
 import { PhotoCategory } from './graphql';
+import { Db, ObjectId } from 'mongodb';
+
+export type Context = {
+  db: Db;
+  currentUser: ModelUser;
+};
 
 export type ModelPhoto = {
-  id: string;
-  _id?: string;
+  _id: ObjectId;
   name: string;
   description?: string | null;
   category: PhotoCategory;
@@ -11,11 +16,14 @@ export type ModelPhoto = {
 };
 
 export type ModelUser = {
-  githubLogin: string;
+  _id: ObjectId;
   name: string;
+  avatar: string;
+  githubLogin: string;
+  githubToken: string;
 };
 
-export type Tag = {
-  photoID: string;
-  userID: string;
+export type ModelTag = {
+  photoID: ObjectId;
+  githubLogin: string;
 };
