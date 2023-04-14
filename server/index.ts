@@ -40,6 +40,7 @@ console.log('Pinged your deployment. You successfully connected to MongoDB!');
 const app = express();
 const httpServer = http.createServer(app);
 
+// GraphQLスキーマオブジェクトを生成する
 const schemaWithResolvers = addResolversToSchema({ schema, resolvers });
 
 // サーバのインスタンスを作成

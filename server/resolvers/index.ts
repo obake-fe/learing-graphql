@@ -3,6 +3,7 @@ import { Mutation } from './Mutation.js';
 import { Type } from './Type.js';
 import { Resolvers } from '../types/generated/graphql';
 
+// トップレベルのリゾルバオブジェクト
 export const resolvers: Resolvers = {
   Query,
   Mutation,
