@@ -4,6 +4,8 @@
   "scripts": {
     "start": "nodemon index.ts",
     "codegen": "graphql-codegen --config codegen.yml",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "fix": "eslint --fix './**/*.{ts,tsx}'",
     "prettier": "npx prettier --write ."
   },
   "dependencies": {
@@ -23,10 +25,17 @@
     "@graphql-codegen/cli": "^3.3.0",
     "@graphql-codegen/typescript": "^3.0.3",
     "@graphql-codegen/typescript-resolvers": "^3.2.0",
+    "@graphql-eslint/eslint-plugin": "^3.18.0",
     "@types/cors": "^2.8.13",
     "@types/node": "^18.15.11",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "eslint": "^8.38.0",
+    "eslint-config-standard-with-typescript": "^34.0.1",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
     "prettier": "^2.8.7",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.3"
+    "typescript": "^5.0.4"
   }
 }

@@ -5,7 +5,7 @@ import { authorizeWithGithub } from '../lib/index.js';
 export const Mutation: MutationResolvers = {
   async postPhoto(parent, { input }, { db, currentUser }) {
     // 1. コンテキストにユーザーがいなければエラーを投げる
-    if (!currentUser) {
+    if (Object.keys(currentUser).length === 0) {
       throw new Error('only an authorized user can post a photo');
     }
 
@@ -13,7 +13,7 @@ export const Mutation: MutationResolvers = {
     const newPhoto = {
       name: input.name,
       description: input.description,
-      category: input.category || ('PORTRAIT' as PhotoCategory),
+      category: input.category ?? ('PORTRAIT' as PhotoCategory),
       githubLogin: currentUser.githubLogin,
       created: new Date()
     };
@@ -29,19 +29,19 @@ export const Mutation: MutationResolvers = {
   },
   async githubAuth(parent, { code }, { db }) {
     // 1. Githubからデータを取得する
-    let { message, access_token, avatar_url, login, name } = await authorizeWithGithub({
+    const { message, access_token, avatar_url, login, name } = await authorizeWithGithub({
       client_id: process.env.CLIENT_ID as string,
       client_secret: process.env.CLIENT_SECRET as string,
       code
     });
 
     // 2. メッセージがある場合は何らかのエラーが発生している
-    if (message) {
+    if (typeof message !== 'undefined') {
       throw new Error(message);
     }
 
     // 3. データをひとつのオブジェクトにまとめる
-    let latestUserInfo = {
+    const latestUserInfo = {
       name,
       githubLogin: login,
       githubToken: access_token,
@@ -84,8 +84,8 @@ export const Mutation: MutationResolvers = {
 
     // 外部APIを使ってユーザーデータを取得する
     // @see https://randomuser.me/
-    const { results }: { results: FakeUser[] } = await fetch(randomUserApi).then((res) =>
-      res.json()
+    const { results }: { results: FakeUser[] } = await fetch(randomUserApi).then(
+      async (res) => await res.json()
     );
 
     const users = results.map((r) => ({
@@ -107,7 +107,7 @@ export const Mutation: MutationResolvers = {
   async fakeUserAuth(parent, { githubLogin }, { db }) {
     const user = await db.collection<ModelUser>('users').findOne({ githubLogin });
 
-    if (!user) {
+    if (user === null) {
       throw new Error(`Cannot find user with githubLogin ${githubLogin}`);
     }
 

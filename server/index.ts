@@ -70,4 +70,4 @@ app.use(
 
 // webサーバを起動
 await new Promise<void>((resolve) => httpServer.listen(4000, resolve as any));
-console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+console.log('🚀 Server ready at http://localhost:4000/graphql');

@@ -11,6 +11,14 @@ type GithubAccessToken = {
   error?: string;
 };
 
+type GithubUserAccount = {
+  message?: string;
+  access_token: string;
+  avatar_url: string;
+  login: string;
+  name: string;
+};
+
 /**
  * 5. API: client_id、client_secret、client_codeを用いて、
  * GithubAccess_tokenを要求する
@@ -35,8 +43,8 @@ const requestGithubToken = async (credentials: Credentials): Promise<GithubAcces
  * 7. API: access_tokenを用いてユーザー情報を要求する
  * @param access_token
  */
-const requestGithubUserAccount = async (access_token: string): Promise<any> => {
-  const response = await fetch(`https://api.github.com/user`, {
+const requestGithubUserAccount = async (access_token: string): Promise<GithubUserAccount> => {
+  const response = await fetch('https://api.github.com/user', {
     headers: {
       Authorization: `Bearer ${access_token}`
     }
@@ -47,7 +55,7 @@ const requestGithubUserAccount = async (access_token: string): Promise<any> => {
   return data;
 };
 
-export const authorizeWithGithub = async (credentials: Credentials) => {
+export const authorizeWithGithub = async (credentials: Credentials): Promise<GithubUserAccount> => {
   const { access_token } = await requestGithubToken(credentials);
   const githubUser = await requestGithubUserAccount(access_token);
   return { ...githubUser, access_token };
