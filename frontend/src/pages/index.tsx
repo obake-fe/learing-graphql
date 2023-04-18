@@ -2,7 +2,7 @@ import { UserList } from "@/pages/components/UserList";
 import { useQuery } from "@apollo/client";
 import { gql } from "@/__generated__";
 
-const ROOT_QUERY = gql(`query allUsers {
+export const ROOT_QUERY = gql(`query allUsers {
   totalUsers
   allUsers {
     githubLogin
