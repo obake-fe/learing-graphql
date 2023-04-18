@@ -12,7 +12,7 @@ const ROOT_QUERY = gql(`query allUsers {
 }`);
 
 export default function Home() {
-  const { loading, error, data } = useQuery(ROOT_QUERY);
+  const { loading, error, data, refetch } = useQuery(ROOT_QUERY);
 
   if (loading || !data) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;
@@ -20,7 +20,11 @@ export default function Home() {
   return (
     <>
       <h1>Hello Next.js</h1>
-      <UserList count={data.totalUsers} />
+      <UserList
+        count={data.totalUsers}
+        users={data.allUsers}
+        refetchUsers={refetch}
+      />
     </>
   );
 }
