@@ -1,15 +1,20 @@
 import { UserList } from "@/pages/components/UserList";
 import { useQuery } from "@apollo/client";
-import { gql } from "@/__generated__";
+import { graphql } from "@/__generated__";
 
-export const ROOT_QUERY = gql(`query allUsers {
-  totalUsers
-  allUsers {
-    githubLogin
-    name
-    avatar
+export const ROOT_QUERY = graphql(`
+  query users {
+    totalUsers
+    allUsers {
+      githubLogin
+      ...userItem
+    }
+    me {
+      githubLogin
+      ...userItem
+    }
   }
-}`);
+`);
 
 export default function Home() {
   const { loading, error, data, refetch } = useQuery(ROOT_QUERY);

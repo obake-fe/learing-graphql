@@ -13,34 +13,39 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
-    "\n   mutation addFakeUsers($count:Int!) {\n    addFakeUsers(count:$count) {\n      githubLogin\n      name\n      avatar\n    }\n  }\n": types.AddFakeUsersDocument,
-    "query allUsers {\n  totalUsers\n  allUsers {\n    githubLogin\n    name\n    avatar\n  }\n}": types.AllUsersDocument,
+    "\n  fragment userItem on User {\n    name\n    avatar\n  }\n": types.UserItemFragmentDoc,
+    "\n  mutation addFakeUsers($count: Int!) {\n    addFakeUsers(count: $count) {\n      githubLogin\n      ...userItem\n    }\n  }\n": types.AddFakeUsersDocument,
+    "\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      githubLogin\n      ...userItem\n    }\n  }\n": types.UsersDocument,
 };
 
 /**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  *
  *
  * @example
  * ```ts
- * const query = gql(`query GetUser($id: ID!) { user(id: $id) { name } }`);
+ * const query = graphql(`query GetUser($id: ID!) { user(id: $id) { name } }`);
  * ```
  *
  * The query argument is unknown!
  * Please regenerate the types.
  */
-export function gql(source: string): unknown;
+export function graphql(source: string): unknown;
 
 /**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n   mutation addFakeUsers($count:Int!) {\n    addFakeUsers(count:$count) {\n      githubLogin\n      name\n      avatar\n    }\n  }\n"): (typeof documents)["\n   mutation addFakeUsers($count:Int!) {\n    addFakeUsers(count:$count) {\n      githubLogin\n      name\n      avatar\n    }\n  }\n"];
+export function graphql(source: "\n  fragment userItem on User {\n    name\n    avatar\n  }\n"): (typeof documents)["\n  fragment userItem on User {\n    name\n    avatar\n  }\n"];
 /**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "query allUsers {\n  totalUsers\n  allUsers {\n    githubLogin\n    name\n    avatar\n  }\n}"): (typeof documents)["query allUsers {\n  totalUsers\n  allUsers {\n    githubLogin\n    name\n    avatar\n  }\n}"];
+export function graphql(source: "\n  mutation addFakeUsers($count: Int!) {\n    addFakeUsers(count: $count) {\n      githubLogin\n      ...userItem\n    }\n  }\n"): (typeof documents)["\n  mutation addFakeUsers($count: Int!) {\n    addFakeUsers(count: $count) {\n      githubLogin\n      ...userItem\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      githubLogin\n      ...userItem\n    }\n  }\n"): (typeof documents)["\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      githubLogin\n      ...userItem\n    }\n  }\n"];
 
-export function gql(source: string) {
+export function graphql(source: string) {
   return (documents as any)[source] ?? {};
 }
 

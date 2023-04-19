@@ -7,12 +7,12 @@ const config: CodegenConfig = {
     "./src/__generated__/": {
       preset: "client",
       plugins: [],
-      presetConfig: {
-        gqlTagName: "gql", // for better experience with the watcher
-      },
+      // presetConfig: {
+      //   gqlTagName: "gql",
+      // },
     },
   },
-  ignoreNoDocuments: true,
+  ignoreNoDocuments: true, // for better experience with the watcher
 };
 
 export default config;

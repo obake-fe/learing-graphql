@@ -1,24 +1,23 @@
-import Image from "next/image";
-import { User } from "@/__generated__/graphql";
+import { UsersQuery } from "@/__generated__/graphql";
+import { graphql } from "@/__generated__";
 import { ObservableQuery, useMutation } from "@apollo/client";
-import { gql } from "@/__generated__";
 import { ROOT_QUERY } from "@/pages";
+import { UserItem } from "@/pages/components/UserItem";
 
-type OwnProps = {
-  count: number;
-  users: Pick<User, "githubLogin" | "name" | "avatar">[];
-  refetchUsers: ObservableQuery["refetch"];
-};
-
-const ADD_FAKE_USERS_MUTATION = gql(`
-   mutation addFakeUsers($count:Int!) {
-    addFakeUsers(count:$count) {
+const ADD_FAKE_USERS_MUTATION = graphql(`
+  mutation addFakeUsers($count: Int!) {
+    addFakeUsers(count: $count) {
       githubLogin
-      name
-      avatar
+      ...userItem
     }
   }
 `);
+
+type OwnProps = {
+  count: UsersQuery["totalUsers"];
+  users: UsersQuery["allUsers"];
+  refetchUsers: ObservableQuery["refetch"];
+};
 
 export const UserList = ({
   count,
@@ -30,7 +29,7 @@ export const UserList = ({
     {
       refetchQueries: [
         { query: ROOT_QUERY }, // DocumentNode object parsed with gql
-        "allUsers", // Query name
+        "users", // Query name
       ],
     }
   );
@@ -47,13 +46,7 @@ export const UserList = ({
       </button>
       <ul>
         {users.map((user) => {
-          if (!user.avatar) return null;
-          return (
-            <li key={user.githubLogin}>
-              <Image src={user.avatar} width={48} height={48} alt="" />
-              {user.name}
-            </li>
-          );
+          return <UserItem user={user} key={user.githubLogin} />;
         })}
       </ul>
     </div>
