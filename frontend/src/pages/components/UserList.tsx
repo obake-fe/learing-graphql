@@ -2,7 +2,7 @@ import { UsersQuery } from "@/__generated__/graphql";
 import { graphql } from "@/__generated__";
 import { ObservableQuery, useMutation } from "@apollo/client";
 import { ROOT_QUERY } from "@/pages";
-import { UserItem } from "@/pages/components/UserItem";
+import UserItem from "@/pages/components/UserItem";
 
 const ADD_FAKE_USERS_MUTATION = graphql(`
   mutation addFakeUsers($count: Int!) {
@@ -19,11 +19,7 @@ type OwnProps = {
   refetchUsers: ObservableQuery["refetch"];
 };
 
-export const UserList = ({
-  count,
-  users,
-  refetchUsers,
-}: OwnProps): JSX.Element => {
+const UserList = ({ count, users, refetchUsers }: OwnProps): JSX.Element => {
   const [addFakeUsers, { data, loading, error }] = useMutation(
     ADD_FAKE_USERS_MUTATION,
     {
@@ -34,7 +30,7 @@ export const UserList = ({
     }
   );
 
-  if (loading) return <p>Loading...</p>;
+  if (loading || !Array.isArray(users)) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;
 
   return (
@@ -52,3 +48,5 @@ export const UserList = ({
     </div>
   );
 };
+
+export default UserList;

@@ -15,15 +15,17 @@ type OwnProps = {
   user: FragmentType<typeof UserItemFragmentDoc>;
 };
 
-export const UserItem = (props: OwnProps): JSX.Element | null => {
+const UserItem = (props: OwnProps): JSX.Element | null => {
   const user = useFragment(USER_ITEM_FRAGMENT, props.user);
 
-  if (!user.avatar) return null;
+  if (!user?.avatar) return null;
 
   return (
     <li>
       <Image src={user.avatar} width={48} height={48} alt="" />
-      {user.name}
+      {user?.name}
     </li>
   );
 };
+
+export default UserItem;

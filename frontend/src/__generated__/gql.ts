@@ -13,6 +13,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
+    "\n  mutation githubAuth($code: String!) {\n    githubAuth(code: $code) {\n      token\n    }\n  }\n": types.GithubAuthDocument,
     "\n  fragment userItem on User {\n    name\n    avatar\n  }\n": types.UserItemFragmentDoc,
     "\n  mutation addFakeUsers($count: Int!) {\n    addFakeUsers(count: $count) {\n      githubLogin\n      ...userItem\n    }\n  }\n": types.AddFakeUsersDocument,
     "\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      githubLogin\n      ...userItem\n    }\n  }\n": types.UsersDocument,
@@ -32,6 +33,10 @@ const documents = {
  */
 export function graphql(source: string): unknown;
 
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation githubAuth($code: String!) {\n    githubAuth(code: $code) {\n      token\n    }\n  }\n"): (typeof documents)["\n  mutation githubAuth($code: String!) {\n    githubAuth(code: $code) {\n      token\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

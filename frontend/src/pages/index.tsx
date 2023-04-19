@@ -1,6 +1,7 @@
-import { UserList } from "@/pages/components/UserList";
+import UserList from "@/pages/components/UserList";
 import { useQuery } from "@apollo/client";
 import { graphql } from "@/__generated__";
+import AuthorizedUser from "@/pages/components/AuthorizedUser";
 
 export const ROOT_QUERY = graphql(`
   query users {
@@ -25,6 +26,7 @@ export default function Home() {
   return (
     <>
       <h1>Hello Next.js</h1>
+      <AuthorizedUser />
       <UserList
         count={data.totalUsers}
         users={data.allUsers}
