@@ -1,6 +1,7 @@
-import { MeInfoFragmentDoc } from "@/__generated__/graphql";
+import { MeInfoFragmentDoc, UsersQuery } from "@/__generated__/graphql";
 import Image from "next/image";
 import { FragmentType, graphql, useFragment } from "@/__generated__";
+import { ApolloClient } from "@apollo/client";
 
 const ME_INFO_FRAGMENT = graphql(`
   fragment meInfo on User {
@@ -11,6 +12,7 @@ const ME_INFO_FRAGMENT = graphql(`
 
 type OwnProps = {
   me: FragmentType<typeof MeInfoFragmentDoc>;
+  client: ApolloClient<UsersQuery>;
   signingIn: boolean;
   requestCode: () => void;
 };
@@ -18,8 +20,10 @@ type OwnProps = {
 const Me = (props: OwnProps) => {
   const me = useFragment(ME_INFO_FRAGMENT, props.me);
 
-  const logout = () => {
+  const logout = async () => {
     localStorage.removeItem("token");
+    // キャッシュをクリアして再描画させる
+    await props.client.resetStore();
   };
 
   return (

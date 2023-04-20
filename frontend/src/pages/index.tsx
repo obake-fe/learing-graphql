@@ -17,7 +17,7 @@ export const ROOT_QUERY = graphql(`
 `);
 
 export default function Home() {
-  const { loading, error, data, refetch } = useQuery(ROOT_QUERY);
+  const { loading, error, data, refetch, client } = useQuery(ROOT_QUERY);
 
   if (loading || !data) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;
@@ -25,7 +25,7 @@ export default function Home() {
   return (
     <>
       <h1>Hello Next.js</h1>
-      <AuthorizedUser me={data.me} />
+      <AuthorizedUser me={data.me} client={client} />
       <UserList
         count={data.totalUsers}
         users={data.allUsers}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { graphql } from "@/__generated__";
-import { FetchResult, useMutation } from "@apollo/client";
+import { ApolloClient, FetchResult, useMutation } from "@apollo/client";
 import { ROOT_QUERY } from "@/pages";
 import { GithubAuthMutation, UsersQuery } from "@/__generated__/graphql";
 import Me from "@/pages/components/Me";
@@ -16,6 +16,7 @@ const GITHUB_AUTH_MUTATION = graphql(`
 
 type OwnProps = {
   me: UsersQuery["me"];
+  client: ApolloClient<UsersQuery>;
 };
 
 const AuthorizedUser = (props: OwnProps) => {
@@ -60,7 +61,14 @@ const AuthorizedUser = (props: OwnProps) => {
     );
   };
 
-  return <Me me={props.me} signingIn={signingIn} requestCode={requestCode} />;
+  return (
+    <Me
+      me={props.me}
+      client={props.client}
+      signingIn={signingIn}
+      requestCode={requestCode}
+    />
+  );
 };
 
 export default AuthorizedUser;

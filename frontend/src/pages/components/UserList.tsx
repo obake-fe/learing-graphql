@@ -20,13 +20,27 @@ type OwnProps = {
 };
 
 const UserList = ({ count, users, refetchUsers }: OwnProps): JSX.Element => {
-  const [addFakeUsers, { data, loading, error }] = useMutation(
+  const [addFakeUsers, { loading, error }] = useMutation(
     ADD_FAKE_USERS_MUTATION,
     {
-      refetchQueries: [
-        { query: ROOT_QUERY }, // DocumentNode object parsed with gql
-        "users", // Query name
-      ],
+      update(cache, { data }) {
+        const newUsers = data?.addFakeUsers; // ミューテーションのレスポンス
+        const existingUsers = cache.readQuery({
+          query: ROOT_QUERY,
+        });
+
+        // ミューテーションの結果に応じてcacheを更新する
+        if (newUsers && existingUsers) {
+          cache.writeQuery({
+            query: ROOT_QUERY,
+            data: {
+              totalUsers: newUsers.length,
+              allUsers: [...existingUsers?.allUsers, ...newUsers],
+              me: existingUsers.me,
+            },
+          });
+        }
+      },
     }
   );
 
