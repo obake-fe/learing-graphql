@@ -11,8 +11,7 @@ export const ROOT_QUERY = graphql(`
       ...userItem
     }
     me {
-      githubLogin
-      ...userItem
+      ...meInfo
     }
   }
 `);
@@ -26,7 +25,7 @@ export default function Home() {
   return (
     <>
       <h1>Hello Next.js</h1>
-      <AuthorizedUser />
+      <AuthorizedUser me={data.me} />
       <UserList
         count={data.totalUsers}
         users={data.allUsers}

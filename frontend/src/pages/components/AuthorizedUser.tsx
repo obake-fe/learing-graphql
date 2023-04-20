@@ -3,7 +3,8 @@ import { useRouter } from "next/router";
 import { graphql } from "@/__generated__";
 import { FetchResult, useMutation } from "@apollo/client";
 import { ROOT_QUERY } from "@/pages";
-import { GithubAuthMutation } from "@/__generated__/graphql";
+import { GithubAuthMutation, UsersQuery } from "@/__generated__/graphql";
+import Me from "@/pages/components/Me";
 
 const GITHUB_AUTH_MUTATION = graphql(`
   mutation githubAuth($code: String!) {
@@ -13,14 +14,21 @@ const GITHUB_AUTH_MUTATION = graphql(`
   }
 `);
 
-const AuthorizedUser = () => {
+type OwnProps = {
+  me: UsersQuery["me"];
+};
+
+const AuthorizedUser = (props: OwnProps) => {
+  const [signingIn, setSigningIn] = useState(false);
+  const router = useRouter();
+
   const authorizationComplete = ({
     data,
   }: Omit<FetchResult<GithubAuthMutation>, "context">) => {
-    console.log("🦖", data);
+    // 10. クライアント:GraphQLリクエストを送信するために利用するトークンを保存する
     if (data) localStorage.setItem("token", data.githubAuth.token);
     router.replace("/");
-    setSignIn(false);
+    setSigningIn(false);
   };
 
   const [githubAuth, { data, loading, error }] = useMutation(
@@ -31,20 +39,20 @@ const AuthorizedUser = () => {
     }
   );
 
-  const [signIn, setSignIn] = useState(false);
-  const router = useRouter();
-
   useEffect(() => {
+    // 3. Github:コードを付けてWebサイトにリダイレクトする
     if (window.location.search.match(/code=/)) {
-      setSignIn(true);
+      setSigningIn(true);
 
       // URLに付与されたコードを削除して、内部的には記録する
       const code = window.location.search.replace("?code=", "");
-      console.log("🦀", code);
+
+      // 4. クライアント:先程のコードを使用してGraphQLミューテーションauthUser(code)を送信します
       githubAuth({ variables: { code } });
     }
   }, [githubAuth]);
 
+  // 1. クライアント:client_idを付けてユーザーをGithubにリダイレクトする
   const requestCode = () => {
     const clientID = process.env.NEXT_PUBLIC_CLIENT_ID;
     router.replace(
@@ -52,11 +60,7 @@ const AuthorizedUser = () => {
     );
   };
 
-  return (
-    <button onClick={() => requestCode()} disabled={signIn}>
-      Sign In with Github
-    </button>
-  );
+  return <Me me={props.me} signingIn={signingIn} requestCode={requestCode} />;
 };
 
 export default AuthorizedUser;

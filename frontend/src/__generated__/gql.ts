@@ -14,9 +14,10 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  */
 const documents = {
     "\n  mutation githubAuth($code: String!) {\n    githubAuth(code: $code) {\n      token\n    }\n  }\n": types.GithubAuthDocument,
+    "\n  fragment meInfo on User {\n    name\n    avatar\n  }\n": types.MeInfoFragmentDoc,
     "\n  fragment userItem on User {\n    name\n    avatar\n  }\n": types.UserItemFragmentDoc,
     "\n  mutation addFakeUsers($count: Int!) {\n    addFakeUsers(count: $count) {\n      githubLogin\n      ...userItem\n    }\n  }\n": types.AddFakeUsersDocument,
-    "\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      githubLogin\n      ...userItem\n    }\n  }\n": types.UsersDocument,
+    "\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      ...meInfo\n    }\n  }\n": types.UsersDocument,
 };
 
 /**
@@ -40,6 +41,10 @@ export function graphql(source: "\n  mutation githubAuth($code: String!) {\n    
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  fragment meInfo on User {\n    name\n    avatar\n  }\n"): (typeof documents)["\n  fragment meInfo on User {\n    name\n    avatar\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  fragment userItem on User {\n    name\n    avatar\n  }\n"): (typeof documents)["\n  fragment userItem on User {\n    name\n    avatar\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -48,7 +53,7 @@ export function graphql(source: "\n  mutation addFakeUsers($count: Int!) {\n    
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      githubLogin\n      ...userItem\n    }\n  }\n"): (typeof documents)["\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      githubLogin\n      ...userItem\n    }\n  }\n"];
+export function graphql(source: "\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      ...meInfo\n    }\n  }\n"): (typeof documents)["\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      ...meInfo\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
