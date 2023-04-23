@@ -3,19 +3,23 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import { expressMiddleware } from '@apollo/server/express4';
 import { loadSchema } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
-import { addResolversToSchema } from '@graphql-tools/schema';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 import { ModelUser } from './types/generated/types';
 import { resolvers } from './resolvers/index.js';
 import { MongoClient, ServerApiVersion } from 'mongodb';
 import express from 'express';
 import * as http from 'http';
 import cors from 'cors';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { PubSub } from 'graphql-subscriptions';
+import bodyParser from 'body-parser';
 // index.mjs (ESM)
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-// schema is `GraphQLSchema` instance
-const schema = await loadSchema('schema.graphql', {
+// typeDefs is `GraphQLSchema` instance
+const typeDefs = await loadSchema('schema.graphql', {
   // load from a single schema file
   loaders: [new GraphQLFileLoader()]
 });
@@ -37,16 +41,51 @@ await client.connect();
 await client.db('test_db').command({ ping: 1 });
 console.log('Pinged your deployment. You successfully connected to MongoDB!');
 
+// Create the schema, which will be used separately by ApolloServer and
+// the WebSocket server.
+const schema = makeExecutableSchema({ typeDefs, resolvers });
+
+// Create an Express app and HTTP server; we will attach both the WebSocket
+// server and the ApolloServer to this HTTP server.
 const app = express();
 const httpServer = http.createServer(app);
+const pubsub = new PubSub(); // Publish and Subscribe, Publish -> everyone gets to hear it
 
-// GraphQLスキーマオブジェクトを生成する
-const schemaWithResolvers = addResolversToSchema({ schema, resolvers });
+// Create our WebSocket server using the HTTP server we just set up.
+const wsServer = new WebSocketServer({
+  server: httpServer,
+  path: '/graphql'
+});
+
+// Save the returned server's info, so we can shut down this server later
+const serverCleanup = useServer(
+  {
+    schema,
+    context: async () => {
+      // This will be run every time the client sends a subscription request
+      return { db: database, pubsub };
+    }
+  },
+  wsServer
+);
 
 // サーバのインスタンスを作成
 const server = new ApolloServer({
-  schema: schemaWithResolvers,
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
+  schema,
+  plugins: [
+    // Proper shutdown for the HTTP server.
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+    // Proper shutdown for the WebSocket server.
+    {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            await serverCleanup.dispose();
+          }
+        };
+      }
+    }
+  ]
 });
 
 await server.start();
@@ -58,16 +97,19 @@ app.get('/', (req, res) => res.end('Welcome to the PhotoShare API'));
 app.use(
   '/graphql',
   cors<cors.CorsRequest>(),
-  express.json(),
+  bodyParser.json(),
   expressMiddleware(server, {
     context: async ({ req }) => {
       const githubToken = req.headers.authorization;
       const currentUser = await database.collection<ModelUser>('users').findOne({ githubToken });
-      return { db: database, currentUser };
+      return { db: database, currentUser, pubsub };
     }
   })
 );
 
 // webサーバを起動
-await new Promise<void>((resolve) => httpServer.listen(4000, resolve as any));
-console.log('🚀 Server ready at http://localhost:4000/graphql');
+const PORT = 4000;
+// Now that our HTTP server is fully set up, we can listen to it.
+httpServer.listen(PORT, () => {
+  console.log(`Server is now running on http://localhost:${PORT}/graphql`);
+});

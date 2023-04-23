@@ -95,6 +95,11 @@ export type Query = {
   totalUsers: Scalars['Int'];
 };
 
+export type Subscription = {
+  __typename?: 'Subscription';
+  newPhoto: Photo;
+};
+
 export type User = {
   __typename?: 'User';
   avatar?: Maybe<Scalars['String']>;
@@ -186,6 +191,7 @@ export type ResolversTypes = {
   PostPhotoInput: PostPhotoInput;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  Subscription: ResolverTypeWrapper<{}>;
   User: ResolverTypeWrapper<ModelUser>;
 };
 
@@ -201,6 +207,7 @@ export type ResolversParentTypes = {
   PostPhotoInput: PostPhotoInput;
   Query: {};
   String: Scalars['String'];
+  Subscription: {};
   User: ModelUser;
 };
 
@@ -241,6 +248,10 @@ export type QueryResolvers<ContextType = Context, ParentType extends ResolversPa
   totalUsers?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 };
 
+export type SubscriptionResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
+  newPhoto?: SubscriptionResolver<ResolversTypes['Photo'], "newPhoto", ParentType, ContextType>;
+};
+
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   avatar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   githubLogin?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -256,6 +267,7 @@ export type Resolvers<ContextType = Context> = {
   Mutation?: MutationResolvers<ContextType>;
   Photo?: PhotoResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Subscription?: SubscriptionResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
 };
 

@@ -1,11 +1,12 @@
 import { MutationResolvers, PhotoCategory } from '../types/generated/graphql';
 import { ModelPhoto, ModelUser } from '../types/generated/types';
 import { authorizeWithGithub } from '../lib/index.js';
+import { newPhotoTrigger } from './Subscription.js';
 
 export const Mutation: MutationResolvers = {
-  async postPhoto(parent, { input }, { db, currentUser }) {
+  async postPhoto(parent, { input }, { db, currentUser, pubsub }) {
     // 1. コンテキストにユーザーがいなければエラーを投げる
-    if (Object.keys(currentUser).length === 0) {
+    if (currentUser === null || Object.keys(currentUser).length === 0) {
       throw new Error('only an authorized user can post a photo');
     }
 
@@ -25,6 +26,10 @@ export const Mutation: MutationResolvers = {
     const { insertedId } = await db
       .collection<Omit<ModelPhoto, '_id'>>('photos')
       .insertOne(newPhoto);
+
+    // Subscription用にnewPhotoをkeyとするオブジェクトをpublishする
+    await pubsub.publish(newPhotoTrigger, { newPhoto: { ...newPhoto, _id: insertedId } });
+
     return { ...newPhoto, _id: insertedId };
   },
   async githubAuth(parent, { code }, { db }) {

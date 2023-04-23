@@ -1,9 +1,11 @@
 import { PhotoCategory } from './graphql';
 import { Db, ObjectId } from 'mongodb';
+import { PubSub } from 'graphql-subscriptions/dist/pubsub';
 
 export type Context = {
   db: Db;
-  currentUser: ModelUser;
+  currentUser: ModelUser | null;
+  pubsub: PubSub;
 };
 
 export type ModelPhoto = {
