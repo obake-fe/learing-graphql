@@ -16,6 +16,7 @@ export type Scalars = {
   Float: number;
   /** カスタムスカラー型 */
   DateTime: unknown;
+  Upload: unknown;
 };
 
 export type AuthPayload = {
@@ -82,6 +83,7 @@ export enum PhotoCategory {
 export type PostPhotoInput = {
   category?: InputMaybe<PhotoCategory>;
   description?: InputMaybe<Scalars['String']>;
+  file: Scalars['Upload'];
   name: Scalars['String'];
 };
 
@@ -193,6 +195,7 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
+  Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<ModelUser>;
 };
 
@@ -209,6 +212,7 @@ export type ResolversParentTypes = {
   Query: {};
   String: Scalars['String'];
   Subscription: {};
+  Upload: Scalars['Upload'];
   User: ModelUser;
 };
 
@@ -254,6 +258,10 @@ export type SubscriptionResolvers<ContextType = Context, ParentType extends Reso
   newUser?: SubscriptionResolver<ResolversTypes['User'], "newUser", ParentType, ContextType>;
 };
 
+export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
+  name: 'Upload';
+}
+
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   avatar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   githubLogin?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -270,6 +278,7 @@ export type Resolvers<ContextType = Context> = {
   Photo?: PhotoResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
+  Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
 };
 

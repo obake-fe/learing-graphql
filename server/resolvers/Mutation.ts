@@ -1,7 +1,8 @@
 import { MutationResolvers, PhotoCategory } from '../types/generated/graphql';
 import { ModelPhoto, ModelUser } from '../types/generated/types';
-import { authorizeWithGithub } from '../lib/index.js';
+import { authorizeWithGithub, uploadStream } from '../lib/index.js';
 import { newPhotoTrigger, newUserTrigger } from './Subscription.js';
+import path from 'path';
 
 export const Mutation: MutationResolvers = {
   async postPhoto(parent, { input }, { db, currentUser, pubsub }) {
@@ -26,6 +27,11 @@ export const Mutation: MutationResolvers = {
     const { insertedId } = await db
       .collection<Omit<ModelPhoto, '_id'>>('photos')
       .insertOne(newPhoto);
+
+    const toPath = path.join(__dirname, '..', 'assets', 'photos', `${insertedId}.jpg`);
+
+    const { stream } = input.file as any;
+    await uploadStream(stream, toPath);
 
     // Subscription用にnewPhotoをkeyとするオブジェクトをpublishする
     await pubsub.publish(newPhotoTrigger, { newPhoto: { ...newPhoto, _id: insertedId } });
