@@ -1,7 +1,7 @@
 import { MutationResolvers, PhotoCategory } from '../types/generated/graphql';
 import { ModelPhoto, ModelUser } from '../types/generated/types';
 import { authorizeWithGithub } from '../lib/index.js';
-import { newPhotoTrigger } from './Subscription.js';
+import { newPhotoTrigger, newUserTrigger } from './Subscription.js';
 
 export const Mutation: MutationResolvers = {
   async postPhoto(parent, { input }, { db, currentUser, pubsub }) {
@@ -32,7 +32,7 @@ export const Mutation: MutationResolvers = {
 
     return { ...newPhoto, _id: insertedId };
   },
-  async githubAuth(parent, { code }, { db }) {
+  async githubAuth(parent, { code }, { db, pubsub }) {
     // 1. Githubからデータを取得する
     const { message, access_token, avatar_url, login, name } = await authorizeWithGithub({
       client_id: process.env.CLIENT_ID as string,
@@ -61,7 +61,8 @@ export const Mutation: MutationResolvers = {
         returnDocument: 'after' // replace後の値をkey名がvalueのオブジェクトとして返す
       });
 
-    console.log('🐞', value);
+    // Subscription用にnewUserをkeyとするオブジェクトをpublishする
+    await pubsub.publish(newUserTrigger, { newUser: value });
 
     // 5. ユーザーデータとトークンを返す
     return {
@@ -70,7 +71,7 @@ export const Mutation: MutationResolvers = {
     };
   },
   // テスト用にダミーのユーザーデータを取得するミューテーション
-  async addFakeUsers(parent, { count }, { db }) {
+  async addFakeUsers(parent, { count }, { db, pubsub }) {
     const randomUserApi = `https://randomuser.me/api/?results=${count}`;
 
     type FakeUser = {
@@ -104,7 +105,9 @@ export const Mutation: MutationResolvers = {
     const fakeUsers = users.map((user, index) => {
       return { _id: insertedIds[index.toString()], ...user };
     });
-    console.log('🐬fakeUsers', fakeUsers);
+
+    // Subscription用にnewUserをkeyとするオブジェクトをpublishする
+    fakeUsers.forEach((newUser) => pubsub.publish(newUserTrigger, { newUser }));
 
     return fakeUsers;
   },

@@ -98,6 +98,7 @@ export type Query = {
 export type Subscription = {
   __typename?: 'Subscription';
   newPhoto: Photo;
+  newUser: User;
 };
 
 export type User = {
@@ -250,6 +251,7 @@ export type QueryResolvers<ContextType = Context, ParentType extends ResolversPa
 
 export type SubscriptionResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   newPhoto?: SubscriptionResolver<ResolversTypes['Photo'], "newPhoto", ParentType, ContextType>;
+  newUser?: SubscriptionResolver<ResolversTypes['User'], "newUser", ParentType, ContextType>;
 };
 
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
