@@ -33,7 +33,7 @@ const wsLink =
 const authLink = new ApolloLink((operation, forward) => {
   operation.setContext(({ headers }) => ({
     headers: {
-      authorization: token, // however you get your token
+      authorization: localStorage.getItem("token"), // however you get your token
       ...headers,
     },
   }));

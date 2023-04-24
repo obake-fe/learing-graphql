@@ -18,6 +18,7 @@ const documents = {
     "\n  fragment userItem on User {\n    name\n    avatar\n  }\n": types.UserItemFragmentDoc,
     "\n  mutation addFakeUsers($count: Int!) {\n    addFakeUsers(count: $count) {\n      githubLogin\n      ...userItem\n    }\n  }\n": types.AddFakeUsersDocument,
     "\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      ...meInfo\n    }\n  }\n": types.UsersDocument,
+    "\n  subscription newUser {\n    newUser {\n      githubLogin\n      name\n      avatar\n    }\n  }\n": types.NewUserDocument,
 };
 
 /**
@@ -54,6 +55,10 @@ export function graphql(source: "\n  mutation addFakeUsers($count: Int!) {\n    
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      ...meInfo\n    }\n  }\n"): (typeof documents)["\n  query users {\n    totalUsers\n    allUsers {\n      githubLogin\n      ...userItem\n    }\n    me {\n      ...meInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription newUser {\n    newUser {\n      githubLogin\n      name\n      avatar\n    }\n  }\n"): (typeof documents)["\n  subscription newUser {\n    newUser {\n      githubLogin\n      name\n      avatar\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
