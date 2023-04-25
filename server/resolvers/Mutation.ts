@@ -1,8 +1,10 @@
 import { MutationResolvers, PhotoCategory } from '../types/generated/graphql';
 import { ModelPhoto, ModelUser } from '../types/generated/types';
-import { authorizeWithGithub, uploadStream } from '../lib/index.js';
+import { authorizeWithGithub } from '../lib/index.js';
 import { newPhotoTrigger, newUserTrigger } from './Subscription.js';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 export const Mutation: MutationResolvers = {
   async postPhoto(parent, { input }, { db, currentUser, pubsub }) {
@@ -28,10 +30,21 @@ export const Mutation: MutationResolvers = {
       .collection<Omit<ModelPhoto, '_id'>>('photos')
       .insertOne(newPhoto);
 
-    const toPath = path.join(__dirname, '..', 'assets', 'photos', `${insertedId}.jpg`);
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const pathName = path.join(
+      __dirname,
+      '..',
+      '..',
+      'frontend',
+      'public',
+      'photos',
+      `${insertedId}.jpg`
+    );
 
-    const { stream } = input.file as any;
-    await uploadStream(stream, toPath);
+    const { createReadStream } = input.file.file;
+    const stream = createReadStream();
+    await stream.pipe(fs.createWriteStream(pathName));
 
     // Subscription用にnewPhotoをkeyとするオブジェクトをpublishする
     await pubsub.publish(newPhotoTrigger, { newPhoto: { ...newPhoto, _id: insertedId } });

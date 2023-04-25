@@ -1,6 +1,7 @@
 import { PhotoCategory } from './graphql';
 import { Db, ObjectId } from 'mongodb';
 import { PubSub } from 'graphql-subscriptions/dist/pubsub';
+import { ReadStream } from 'fs';
 
 export type Context = {
   db: Db;
@@ -28,4 +29,15 @@ export type ModelUser = {
 export type ModelTag = {
   photoID: ObjectId;
   githubLogin: string;
+};
+
+export type FileUpload = {
+  filename: string;
+  mimetype: string;
+  encoding: string;
+  createReadStream: () => ReadStream;
+};
+
+export type Upload = {
+  file: Promise<FileUpload>;
 };

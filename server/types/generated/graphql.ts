@@ -1,3 +1,4 @@
+import { Upload } from 'types.ts';
 import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 import { ModelPhoto, ModelUser, Context } from 'types.ts';
 export type Maybe<T> = T | null;
@@ -16,7 +17,7 @@ export type Scalars = {
   Float: number;
   /** カスタムスカラー型 */
   DateTime: unknown;
-  Upload: unknown;
+  Upload: Upload;
 };
 
 export type AuthPayload = {

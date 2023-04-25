@@ -8,7 +8,7 @@ export const Type: TrivialResolverType = {
   // トリビアルリゾルバ
   Photo: {
     id: (parent) => parent._id.toString(),
-    url: (parent) => `http://yoursite.com/img/${String(parent._id)}.jpg`,
+    url: (parent) => `/photos/${String(parent._id)}.jpg`,
     postedBy: (parent, args, { db }) => {
       return db.collection('users').findOne({ githubLogin: parent.githubLogin });
     },

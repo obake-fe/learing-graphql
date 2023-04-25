@@ -12,4 +12,4 @@ generates:
         User: "types.ts#ModelUser"
       scalars:
         DateTime: unknown
-        Upload: unknown
+        Upload: "types.ts#Upload"

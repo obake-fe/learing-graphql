@@ -14,6 +14,7 @@ import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { PubSub } from 'graphql-subscriptions';
 import bodyParser from 'body-parser';
+import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 // index.mjs (ESM)
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -98,6 +99,7 @@ app.use(
   '/graphql',
   cors<cors.CorsRequest>(),
   bodyParser.json(),
+  graphqlUploadExpress(),
   expressMiddleware(server, {
     context: async ({ req }) => {
       const githubToken = req.headers.authorization;

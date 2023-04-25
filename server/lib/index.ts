@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 type Credentials = {
   client_id: string;
   client_secret: string;
@@ -61,18 +59,4 @@ export const authorizeWithGithub = async (credentials: Credentials): Promise<Git
   const { access_token } = await requestGithubToken(credentials);
   const githubUser = await requestGithubUserAccount(access_token);
   return { ...githubUser, access_token };
-};
-
-export const uploadStream = async (stream: any, path: string): Promise<void> => {
-  await new Promise((resolve, reject) => {
-    stream
-      .on('error', (error: any) => {
-        if (stream.truncated) {
-          fs.unlinkSync(path);
-        }
-        reject(error);
-      })
-      .on('end', resolve)
-      .pipe(fs.createWriteStream(path));
-  });
 };
