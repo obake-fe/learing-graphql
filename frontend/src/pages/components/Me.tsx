@@ -2,6 +2,7 @@ import { MeInfoFragmentDoc, UsersQuery } from "@/__generated__/graphql";
 import Image from "next/image";
 import { FragmentType, graphql, useFragment } from "@/__generated__";
 import { ApolloClient } from "@apollo/client";
+import Link from "next/link";
 
 const ME_INFO_FRAGMENT = graphql(`
   fragment meInfo on User {
@@ -37,6 +38,7 @@ const Me = (props: OwnProps) => {
           <Image src={me.avatar} width={48} height={48} alt="" />
           <h2>{me.name}</h2>
           <button onClick={logout}>logout</button>
+          <Link href="/newPhoto">Post Photo</Link>
         </div>
       )}
     </>

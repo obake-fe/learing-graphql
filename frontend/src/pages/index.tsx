@@ -3,6 +3,7 @@ import { useQuery, useSubscription } from "@apollo/client";
 import { graphql } from "@/__generated__";
 import AuthorizedUser from "@/pages/components/AuthorizedUser";
 import { useEffect } from "react";
+import PhotoList from "@/pages/components/PhotoList";
 
 export const ROOT_QUERY = graphql(`
   query users {
@@ -13,6 +14,10 @@ export const ROOT_QUERY = graphql(`
     }
     me {
       ...meInfo
+    }
+    allPhotos {
+      id
+      ...photoItem
     }
   }
 `);
@@ -54,11 +59,14 @@ export default function Home() {
     <>
       <h1>Hello Next.js</h1>
       <AuthorizedUser me={data.me} client={client} />
-      <UserList
-        count={data.totalUsers}
-        users={data.allUsers}
-        refetchUsers={refetch}
-      />
+      <section style={{ display: "flex" }}>
+        <UserList
+          count={data.totalUsers}
+          users={data.allUsers}
+          refetchUsers={refetch}
+        />
+        <PhotoList photos={data.allPhotos} />
+      </section>
     </>
   );
 }

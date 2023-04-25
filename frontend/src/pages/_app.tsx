@@ -4,13 +4,13 @@ import {
   ApolloClient,
   ApolloLink,
   ApolloProvider,
-  HttpLink,
   InMemoryCache,
   split,
 } from "@apollo/client";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient } from "graphql-ws";
 import { getMainDefinition } from "@apollo/client/utilities";
+import { createUploadLink } from "apollo-upload-client";
 
 // SSRのときにwindowオブジェクトが存在しないための対策
 const token =
@@ -33,14 +33,15 @@ const wsLink =
 const authLink = new ApolloLink((operation, forward) => {
   operation.setContext(({ headers }) => ({
     headers: {
-      authorization: localStorage.getItem("token"), // however you get your token
       ...headers,
+      authorization: localStorage.getItem("token"), // however you get your token
+      "Apollo-Require-Preflight": "true",
     },
   }));
   return forward(operation);
 });
 
-const httpLink = new HttpLink({
+const httpLink = createUploadLink({
   uri: "http://localhost:4000/graphql",
 });
 
