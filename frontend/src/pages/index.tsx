@@ -1,9 +1,9 @@
-import UserList from "@/pages/components/UserList";
+import UserList from "@/components/UserList";
 import { useQuery, useSubscription } from "@apollo/client";
 import { graphql } from "@/__generated__";
-import AuthorizedUser from "@/pages/components/AuthorizedUser";
+import AuthorizedUser from "@/components/AuthorizedUser";
 import { useEffect } from "react";
-import PhotoList from "@/pages/components/PhotoList";
+import PhotoList from "@/components/PhotoList";
 
 export const ROOT_QUERY = graphql(`
   query users {

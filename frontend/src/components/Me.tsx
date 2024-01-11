@@ -38,7 +38,7 @@ const Me = (props: OwnProps) => {
           <Image src={me.avatar} width={48} height={48} alt="" />
           <h2>{me.name}</h2>
           <button onClick={logout}>logout</button>
-          <Link href="/newPhoto">Post Photo</Link>
+          <Link href="/frontend/src/pages/newPhoto">Post Photo</Link>
         </div>
       )}
     </>

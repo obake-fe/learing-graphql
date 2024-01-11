@@ -1,5 +1,5 @@
 import { UsersQuery } from "@/__generated__/graphql";
-import PhotoItem from "@/pages/components/PhotoItem";
+import PhotoItem from "@/components/PhotoItem";
 
 type OwnProps = {
   photos: UsersQuery["allPhotos"];

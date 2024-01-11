@@ -2,7 +2,7 @@ import { UsersQuery } from "@/__generated__/graphql";
 import { graphql } from "@/__generated__";
 import { ObservableQuery, useMutation } from "@apollo/client";
 import { ROOT_QUERY } from "@/pages";
-import UserItem from "@/pages/components/UserItem";
+import UserItem from "@/components/UserItem";
 
 const ADD_FAKE_USERS_MUTATION = graphql(`
   mutation addFakeUsers($count: Int!) {

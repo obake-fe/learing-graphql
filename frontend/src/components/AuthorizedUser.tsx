@@ -4,7 +4,7 @@ import { graphql } from "@/__generated__";
 import { ApolloClient, FetchResult, useMutation } from "@apollo/client";
 import { ROOT_QUERY } from "@/pages";
 import { GithubAuthMutation, UsersQuery } from "@/__generated__/graphql";
-import Me from "@/pages/components/Me";
+import Me from "@/components/Me";
 
 const GITHUB_AUTH_MUTATION = graphql(`
   mutation githubAuth($code: String!) {
